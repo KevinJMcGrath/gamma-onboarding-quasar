@@ -65,6 +65,14 @@ module.exports = {
     'import/no-extraneous-dependencies': 'off',
     'prefer-promise-reject-errors': 'off',
 
+    // Disable these garbage rules that people on the internet love because they're fucking stupid pedants
+    'space-before-function-paren': 'off',
+    'no-multiple-empty-lines': 'off',
+    'indent': 'off',
+    'camelcase': 'off',
+    'eol-last': 'off',
+    'no-trailing-spaces': 'off',
+
 
     // allow debugger during development only
     'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off'
