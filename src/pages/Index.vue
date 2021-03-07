@@ -155,6 +155,10 @@ export default {
       btn_rsa_disable: true
     }
   },
+  mounted() {
+    this.$store.commit('ADD_LOG_ITEM', 'Loading recent completed tenant notifications...')
+    this.$store.dispatch('getTenantBuildNotifications')
+  },
   methods: {
     load_gamma_details() {
       this.visible = true

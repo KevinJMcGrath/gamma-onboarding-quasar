@@ -33,7 +33,7 @@ const initial_state = () => ({
         company_name: '',
         initial_password: ''
     },
-    log: ['Log entry 1', 'Log entry 2', 'Log entry 3']
+    log: ['Initializing system...']
 })
 
 export default function (/* { ssrContext } */) {

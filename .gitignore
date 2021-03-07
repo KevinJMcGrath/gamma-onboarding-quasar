@@ -33,3 +33,7 @@ yarn-error.log*
 *.sln
 .vscode
 
+# ENV
+.env
+.env.prod
+

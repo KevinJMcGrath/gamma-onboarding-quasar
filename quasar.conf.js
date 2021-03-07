@@ -7,7 +7,7 @@
 // https://quasar.dev/quasar-cli/quasar-conf-js
 /* eslint-env node */
 
-module.exports = function (/* ctx */) {
+module.exports = function (context) {
   return {
     // https://quasar.dev/quasar-cli/supporting-ts
     supportTS: false,
