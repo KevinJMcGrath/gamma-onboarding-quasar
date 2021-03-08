@@ -1,0 +1,40 @@
+{
+    "data": {
+        "tenants": [
+            {
+                "company": "Company Co",
+                "completed_on": "Mon, 01 Mar 2021 15:55:43 GMT",
+                "email": "admin@company.com",
+                "firstname": "Bob",
+                "id": "11223",
+                "lastname": "Smyth",
+                "password": "abcdeFGHIJ"
+            }            
+        ]
+    },
+    "status": 200,
+    "statusText": "",
+    "headers": {
+        "content-length": "1086",
+        "content-type": "application/json"
+    },
+    "config": {
+        "url": "http://localhost:9000/api/tenants",
+        "method": "get",
+        "headers": {
+            "Accept": "application/json, text/plain, */*"
+        },
+        "transformRequest": [
+            null
+        ],
+        "transformResponse": [
+            null
+        ],
+        "timeout": 0,
+        "xsrfCookieName": "XSRF-TOKEN",
+        "xsrfHeaderName": "X-XSRF-TOKEN",
+        "maxContentLength": -1,
+        "maxBodyLength": -1
+    },
+    "request": {}
+}

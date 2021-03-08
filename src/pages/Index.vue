@@ -4,15 +4,27 @@
   <div class="q-pa-md"> 
     <div class="row q-col-gutter-x-md">
       <div class="col">
-        <div class="row">
-          <div class="col">
-            <q-select standout="bg-teal text-white" v-model="model" :options="options" label="Recent Gamma Submissions"/>
+        <div class="row justify-between">
+
+          <div class="col-8" >
+            <q-select standout="bg-teal text-white" v-model="model" :options="ddl_tenant_options" label="Recent Gamma Submissions"/>
           </div>
+
+          <div class="col-3 self-center">
+            <q-btn push color="primary" label="Get Tenants" @click="load_tenant_data" :loading="loading_tenants"> 
+              <template v-slot:loading>
+                <q-spinner-gears class="on-left" />
+              </template>
+            </q-btn>
+          </div>
+
         </div> 
 
         <q-separator class="q-my-md" />
 
         <div class="row justify-end">
+          <!-- <q-circular-progress indeterminate size="20px" :thickness="0.4" font-size="50px" color="lime" track-color="grey-3"
+            center-color="grey-8" class="q-ma-md" /> -->
           <q-btn push color="primary" label="Load Details" v-bind:disabled="btn_load_disable"/> 
         </div>
 
@@ -126,7 +138,7 @@
               <div class="c64_terminal">
                 <ul>
                   <li v-for="log_item in $store.state.log">
-                    {{log_item}}
+                    <span v-bind:class="log_item.classname">{{log_item.text}}</span>
                   </li>
                 </ul>
               </div>
@@ -137,6 +149,25 @@
     </div>    
   </div>
 
+  <!-- Error Dialog Box -->
+  <q-dialog v-model="error.show" persistent>
+    <q-card dark>
+      <q-card-section>
+        <div class="text-h6">Error</div>
+      </q-card-section>
+
+      <q-card-section class="q-pt-none">
+        <div>
+          {{error.message}}
+        </div>
+      </q-card-section>
+
+      <q-card-actions align="right">
+        <q-btn push color="amber" label="OK" v-close-popup />
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
+
   </q-form>
 </template>
 
@@ -146,20 +177,48 @@ export default {
   data() {
     return {
       model: null,
-      options: ['Test 1', 'Test 2', 'Test 3'],
+      ddl_tenant_options: [],
       showGammaData: true,
       rsa_key: "",
       visible: false,
+      loading_tenants: false,
       btn_load_disable: true,
       btn_finalize_disable: true,
-      btn_rsa_disable: true
+      btn_rsa_disable: true,
+      error: {
+        message: '',
+        show: false
+      }
     }
   },
-  mounted() {
-    this.$store.commit('ADD_LOG_ITEM', 'Loading recent completed tenant notifications...')
-    this.$store.dispatch('getTenantBuildNotifications')
+  mounted() {    
+    
+    //this.load_tenant_data()
   },
   methods: {
+    async load_tenant_data() {
+      this.loading_tenants = true
+
+      this.addLogItem(`Connecting to Gamma Onboarding backend at ${this.$store.getters.apiBaseUrl}...`)
+      this.addLogItem('Loading recent completed tenant notifications...')
+      let resp = await this.$store.dispatch('getTenantBuildNotifications')
+
+      this.loading_tenants = false
+
+      console.log(resp)
+
+      if (!resp.success) {
+        //this.error.show = true
+        //this.error.message = 'Error loading data from Symphony: ' + resp.message
+        this.addErrorItem('ERROR!!! Problem loading tenant data from Symphony. Talk to Kevin or Miguel')
+      }
+      else {
+        
+        Object.keys(this.$store.state.tenants).forEach(function(key, index) {          
+          this.ddl_tenant_options.push(key)
+        }.bind(this))
+      }
+    },
     load_gamma_details() {
       this.visible = true
       this.showGammaData = true
@@ -169,6 +228,12 @@ export default {
     },
     toggle_finalize_button(isDisabled) {
       this.btn_finalize_disable = isDisabled
+    },
+    addLogItem(msg) {
+      this.$store.dispatch('addLogItem', {message: msg, isError: false})
+    },
+    addErrorItem(msg) {
+      this.$store.dispatch('addLogItem', {message: msg, isError: true})
     }
   }
 }
@@ -199,6 +264,7 @@ export default {
   color: white
   margin-left: 15px
 
-
+.log_err
+  color: firebrick
 
 </style>

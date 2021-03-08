@@ -33,7 +33,8 @@ const initial_state = () => ({
         company_name: '',
         initial_password: ''
     },
-    log: ['Initializing system...']
+    log: ['Initializing system...'],
+    tenants: {}
 })
 
 export default function (/* { ssrContext } */) {
@@ -72,11 +73,63 @@ export default function (/* { ssrContext } */) {
       },
       ADD_LOG_ITEM(state, log_item) {
           state.log.push(log_item)
+      },
+      ADD_TENANT(state, tenant) {
+          console.log(tenant.company)
+          state.tenants[tenant.company] = tenant
+
       }
   },
+  getters: {
+    apiBaseUrl: (state) => {
+        return `${process.env.API_BASE_URL}:${process.env.API_PORT}`
+    }
+  },
   actions: {
-    async getTenantBuildNotifications({state}) {
+    addLogItem({state, commit}, item) {
+        const log_item = {
+            text: item.message,
+            classname: item.isError ? 'log_err' : 'log_std'
+        }
 
+        commit("ADD_LOG_ITEM", log_item)
+    },
+    async getTenantBuildNotifications({state, getters, commit}) {
+        const retval = {
+            success: true,
+            message: 'Default Message'
+        }
+
+        console.log('Getting tenants from Symphony')
+
+        console.log(`Endpoint: ${getters.apiBaseUrl}/api/tenants`)
+
+        try {
+            //console.log(`Empty tenant object test: ${JSON.stringify(state.tenants) === "{}"}`)
+            console.log(`Tenant Dict: ${JSON.stringify(state.tenants)}`)
+            
+            if (JSON.stringify(state.tenants) === "{}") {
+                
+                let resp = await axios.get(`${getters.apiBaseUrl}/api/tenants`)
+
+                console.log('API call successful')
+                console.log(resp)
+                
+                // For reasons passing understand, Javascript uses multiple keywords in for loops.
+                for (const t of resp.data.tenants) {
+                    commit('ADD_TENANT', t)
+                }
+            }
+            
+        }
+        catch (error) {
+            console.error(error)
+            retval.success = false
+            retval.message = `Unable to get tenant notifications. ${error}`
+        }
+        finally {
+            return retval
+        }
     }
   },
 
