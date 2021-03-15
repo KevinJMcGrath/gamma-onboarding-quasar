@@ -25,7 +25,7 @@
                     </q-item-section>
 
                     <q-item-section>
-                        Select the completed tenant from the dropdown
+                        Click the "Get Tenants" button
                     </q-item-section>
                 </q-item>
 
@@ -37,7 +37,7 @@
                     </q-item-section>
 
                     <q-item-section>
-                        Click "Load Details"
+                        Select the tenant from the dropdown
                     </q-item-section>
                 </q-item>
 

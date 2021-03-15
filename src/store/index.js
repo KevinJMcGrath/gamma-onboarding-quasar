@@ -19,7 +19,8 @@ const initial_state = () => ({
     tenant: {
         tenant_id: '',
         tenant_url: '',
-        tenant_admin_url: ''
+        tenant_admin_url: '',
+        rsa_key: ''
     },
     sfdc: {
         account_id: '',
@@ -31,54 +32,72 @@ const initial_state = () => ({
         lastname: '',
         email: '',
         company_name: '',
-        initial_password: ''
+        initial_password: '',
+        domain: ''
     },
-    log: ['Initializing system...'],
-    tenants: {}
+    log: ['Initializing system...'],    
+    tenant_list: []
 })
+
+function tenantCompare(t1, t2) {
+    if (t1.timestamp < t2.timestamp) {
+        return -1
+    }
+    else if (t1.timestamp > t2.timestamp) {
+        return 1
+    }
+    else {
+        return 0
+    }
+}
 
 export default function (/* { ssrContext } */) {
   const Store = new Vuex.Store({
     state: initial_state(),
 
     mutations: {
-      SET_TENANT_ID(state, tenant_id) {
-          state.tenant.tenant_id = tenant_id
-          state.tenant.tenant_url = `https://${tenant_id}.p.symphony.com`
-          state.tenant.tenant_admin_url = `${state.tenant.tenant_url}/admin-console/`
-      },
-      SET_ACCOUNT_ID(state, acct_id) {
-          state.sfdc.account_id = acct_id
-      },
-      SET_SSE_ID(state, sse_id) {
-          state.sfdc.sse_id = sse_id
-      },
-      SET_CONTACT_ID(state, cnt_id) {
-          state.sfdc.contact_id = cnt_id
-      },
-      SET_FIRSTNAME(state, firstname) {
-          state.user.firstname = firstname
-      },
-      SET_LASTNAME(state, lastname) {
-          state.user.lastname = lastname
-      },
-      SET_EMAIL(state, email) {
-          state.user.email = email
-      },
-      SET_COMPANY_NAME(state, company_name) {
-          state.user.company_name = company_name
-      },
-      SET_INITIAL_PWD(state, pwd) {
-          state.user.initial_password = pwd
-      },
-      ADD_LOG_ITEM(state, log_item) {
-          state.log.push(log_item)
-      },
-      ADD_TENANT(state, tenant) {
-          console.log(tenant.company)
-          state.tenants[tenant.company] = tenant
-
-      }
+        SET_TENANT_ID(state, tenant_id) {
+            state.tenant.tenant_id = tenant_id
+            state.tenant.tenant_url = `https://${tenant_id}.p.symphony.com`
+            state.tenant.tenant_admin_url = `${state.tenant.tenant_url}/admin-console/`
+        },
+        SET_RSA_PUBLIC_KEY(state, rsa_key) {
+            state.tenant.rsa_key = rsa_key
+        },
+        SET_ACCOUNT_ID(state, acct_id) {
+            state.sfdc.account_id = acct_id
+        },
+        SET_SSE_ID(state, sse_id) {
+            state.sfdc.sse_id = sse_id
+        },
+        SET_CONTACT_ID(state, cnt_id) {
+            state.sfdc.contact_id = cnt_id
+        },
+        SET_FIRSTNAME(state, firstname) {
+            state.user.firstname = firstname
+        },
+        SET_LASTNAME(state, lastname) {
+            state.user.lastname = lastname
+        },
+        SET_EMAIL(state, email) {
+            state.user.email = email
+            state.user.domain = email.split('@')[1]
+        },
+        SET_COMPANY_NAME(state, company_name) {
+            state.user.company_name = company_name
+        },
+        SET_INITIAL_PWD(state, pwd) {
+            state.user.initial_password = pwd
+        },
+        ADD_LOG_ITEM(state, log_item) {
+            state.log.push(log_item)
+        },
+        APPEND_LAST_LOG_ITEM(state, msg) {
+            state.log[state.log.length - 1].text += msg
+        },
+        SET_TENANT_LIST(state, tenant_list) {
+            state.tenant_list = tenant_list
+        }
   },
   getters: {
     apiBaseUrl: (state) => {
@@ -86,6 +105,20 @@ export default function (/* { ssrContext } */) {
     }
   },
   actions: {
+    loadTenantDetails({state, commit}, tenant_id)
+    {
+        for (const tenant of state.tenant_list)
+        {
+            if (tenant.id === tenant_id) {
+                commit('SET_TENANT_ID', tenant.id)
+                commit('SET_FIRSTNAME', tenant.firstname)
+                commit('SET_LASTNAME', tenant.lastname)
+                commit('SET_EMAIL', tenant.email)
+                commit('SET_COMPANY_NAME', tenant.company)
+                commit('SET_INITIAL_PWD', tenant.password)
+            }
+        }
+    },
     addLogItem({state, commit}, item) {
         const log_item = {
             text: item.message,
@@ -94,31 +127,63 @@ export default function (/* { ssrContext } */) {
 
         commit("ADD_LOG_ITEM", log_item)
     },
+    appendLastLogItem({state, commit}, msg) {
+        commit("APPEND_LAST_LOG_ITEM", msg)
+    },
+    async getRSAPublicKey({state, getters, commit}) {
+        const retval = {
+            success: true,
+            message: 'Default Message'
+        }
+
+        try {
+            let resp = await axios.get(`${getters.apiBaseUrl}/api/rsa?tenant_id=${state.tenant.tenant_id}`)
+            commit('SET_RSA_PUBLIC_KEY', resp.data.public_key)            
+        }
+        catch (error) {
+            console.error(error)
+            retval.success = false
+            retval.message = `Unable to get RSA Public Key. ${error}`
+        }
+        finally {
+            return retval
+        }
+    },
+    async getSSE({state, getters, commit}) {
+        const retval = {
+            success: true,
+            message: 'Default Message'
+        }
+
+        try {
+            let resp = await axios.get(`${getters.apiBaseUrl}/api/sse?email=${state.user.email}`)
+            commit('SET_SSE_ID', resp.data.sse_id)
+            commit('SET_ACCOUNT_ID', resp.data.account_id)
+        }
+        catch (error) {
+            console.error(error)
+            retval.success = false
+            retval.message = `Unable to get SSE Id. ${error}`
+        }
+        finally {
+            return retval
+        }
+    },
     async getTenantBuildNotifications({state, getters, commit}) {
         const retval = {
             success: true,
             message: 'Default Message'
         }
 
-        console.log('Getting tenants from Symphony')
-
-        console.log(`Endpoint: ${getters.apiBaseUrl}/api/tenants`)
-
-        try {
-            //console.log(`Empty tenant object test: ${JSON.stringify(state.tenants) === "{}"}`)
-            console.log(`Tenant Dict: ${JSON.stringify(state.tenants)}`)
-            
-            if (JSON.stringify(state.tenants) === "{}") {
+        try {            
+            if (state.tenant_list.length === 0) {
                 
                 let resp = await axios.get(`${getters.apiBaseUrl}/api/tenants`)
 
-                console.log('API call successful')
-                console.log(resp)
-                
-                // For reasons passing understand, Javascript uses multiple keywords in for loops.
-                for (const t of resp.data.tenants) {
-                    commit('ADD_TENANT', t)
-                }
+                const tenant_data = resp.data.tenants                
+                tenant_data.sort(tenantCompare)
+
+                commit('SET_TENANT_LIST', tenant_data)
             }
             
         }
@@ -130,6 +195,142 @@ export default function (/* { ssrContext } */) {
         finally {
             return retval
         }
+    },
+    async deployEdwin({state, getters}) {
+        const retval = {
+            success: true,
+            message: 'Default Message'
+        }
+
+        try {            
+            payload = { tenant_id: state.tenant.tenant_id}                
+            let resp = await axios.post(`${getters.apiBaseUrl}/api/finalize/edwin`, payload)
+            
+        }
+        catch (error) {
+            console.error(error)
+            retval.success = false
+            retval.message = `Unable to get deploy Edwin. ${error}`
+        }
+        finally {
+            return retval
+        } 
+    },
+    async createJIRAs({state, getters}) {
+        const retval = {
+            success: true,
+            message: 'Default Message'
+        }
+
+        try {
+            payload = {
+                tenant_id: state.tenant.tenant_id,
+                company: state.user.company_name,
+                account_id: state.sfdc.account_id
+            }
+                
+            let resp = await axios.post(`${getters.apiBaseUrl}/api/finalize/jira`, payload)
+        }
+        catch (error) {
+            console.error(error)
+            retval.success = false
+            retval.message = `Unable to create JIRA tickets. ${error}`
+        }
+        finally {
+            return retval
+        } 
+    },
+    async createZendesk({state, getters}) {
+        const retval = {
+            success: true,
+            message: 'Default Message'
+        }
+
+        try {
+            payload = {
+                tenant_id: state.tenant.tenant_id,
+                company: state.user.company_name,
+                firstname: state.user.firstname,
+                lastname: state.user.lastname,
+                email: state.user.email
+            }                
+            let resp = await axios.post(`${getters.apiBaseUrl}/api/finalize/zendesk`, payload)
+        }
+        catch (error) {
+            console.error(error)
+            retval.success = false
+            retval.message = `Unable to create Zendesk objects. ${error}`
+        }
+        finally {
+            return retval
+        } 
+    },
+    async billClient({state, getters}) {
+        const retval = {
+            success: true,
+            message: 'Default Message'
+        }
+
+        try {
+            payload = {
+                email: state.user.email
+            }
+                
+            let resp = await axios.post(`${getters.apiBaseUrl}/api/finalize/stripe`, payload)
+        }
+        catch (error) {
+            console.error(error)
+            retval.success = false
+            retval.message = `Unable to submit subscription to Stripe. ${error}`
+        }
+        finally {
+            return retval
+        } 
+    },
+    async updateSFDC({state, getters}) {
+        const retval = {
+            success: true,
+            message: 'Default Message'
+        }
+
+        try {
+            payload = {
+                tenant_id: state.tenant.tenant_id,
+                email: state.user.email
+            }
+                
+            let resp = await axios.post(`${getters.apiBaseUrl}/api/finalize/salesforce`, payload)
+        }
+        catch (error) {
+            console.error(error)
+            retval.success = false
+            retval.message = `Unable to get tenant notifications. ${error}`
+        }
+        finally {
+            return retval
+        } 
+    },
+    async notifyClient({state, getters}) {
+        const retval = {
+            success: true,
+            message: 'Default Message'
+        }
+
+        try {
+            payload = {                
+                email: state.user.email
+            }
+                
+            let resp = await axios.post(`${getters.apiBaseUrl}/api/notification/internal`, payload)
+        }
+        catch (error) {
+            console.error(error)
+            retval.success = false
+            retval.message = `Unable to get tenant notifications. ${error}`
+        }
+        finally {
+            return retval
+        } 
     }
   },
 
