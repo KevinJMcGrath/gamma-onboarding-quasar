@@ -130,6 +130,24 @@ export default function (/* { ssrContext } */) {
     appendLastLogItem({state, commit}, msg) {
         commit("APPEND_LAST_LOG_ITEM", msg)
     },
+    async verifyBackendConnection({state, getters}) {
+        const retval = {
+            success: true,
+            message: 'Default Message'
+        }
+
+        try {
+            await axios.get(`${getters.apiBaseUrl}/api`)
+        }
+        catch (error) {
+            console.error(error)
+            retval.success = false
+            retval.message = `Unable to connect to onboarding backend. ${error}`
+        }
+        finally {
+            return retval
+        }
+    },
     async getRSAPublicKey({state, getters, commit}) {
         const retval = {
             success: true,
