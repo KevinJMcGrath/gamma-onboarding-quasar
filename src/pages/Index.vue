@@ -45,7 +45,7 @@
       </div>
     </div>
 
-    <!-- Accordian  style="border:1px solid black;"-->
+    <!-- Accordian -->
     <div class="row q-mt-sm">
       <div class="col-8">
         <q-list bordered class="rounded-borders">
@@ -170,6 +170,7 @@
       </div>
     </div>
 
+    <!-- Debug Log -->
     <div class="row q-mt-sm">
       <div class="col">
         <q-card dark bordered class="bg-grey-9">
