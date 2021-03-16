@@ -20,7 +20,9 @@ const initial_state = () => ({
         tenant_id: '',
         tenant_url: '',
         tenant_admin_url: '',
-        rsa_key: ''
+        rsa_key: '',
+        rsa_key_html: '',
+        bot_email: ''
     },
     sfdc: {
         account_id: '',
@@ -62,7 +64,8 @@ export default function (/* { ssrContext } */) {
             state.tenant.tenant_admin_url = `${state.tenant.tenant_url}/admin-console/`
         },
         SET_RSA_PUBLIC_KEY(state, rsa_key) {
-            state.tenant.rsa_key = rsa_key
+            state.tenant.rsa_key_html = rsa_key
+            state.tenant.rsa_key = rsa_key.replaceAll('<br/>', '\n')
         },
         SET_ACCOUNT_ID(state, acct_id) {
             state.sfdc.account_id = acct_id
@@ -82,6 +85,7 @@ export default function (/* { ssrContext } */) {
         SET_EMAIL(state, email) {
             state.user.email = email
             state.user.domain = email.split('@')[1]
+            state.tenant.bot_email = `mtadminbot@${state.user.domain}`
         },
         SET_COMPANY_NAME(state, company_name) {
             state.user.company_name = company_name
@@ -95,14 +99,17 @@ export default function (/* { ssrContext } */) {
         APPEND_LAST_LOG_ITEM(state, msg) {
             state.log[state.log.length - 1].text += msg
         },
+        CLEAR_LOG(state) {
+            state.log = []
+        },
         SET_TENANT_LIST(state, tenant_list) {
             state.tenant_list = tenant_list
         }
   },
-  getters: {
-    apiBaseUrl: (state) => {
-        return `${process.env.API_BASE_URL}:${process.env.API_PORT}`
-    }
+    getters: {
+        apiBaseUrl: (state) => {
+            return `${process.env.API_BASE_URL}:${process.env.API_PORT}`
+        }
   },
   actions: {
     loadTenantDetails({state, commit}, tenant_id)
@@ -221,7 +228,7 @@ export default function (/* { ssrContext } */) {
         }
 
         try {            
-            payload = { tenant_id: state.tenant.tenant_id}                
+            const payload = { tenant_id: state.tenant.tenant_id}                
             let resp = await axios.post(`${getters.apiBaseUrl}/api/finalize/edwin`, payload)
             
         }
@@ -241,7 +248,7 @@ export default function (/* { ssrContext } */) {
         }
 
         try {
-            payload = {
+            const payload = {
                 tenant_id: state.tenant.tenant_id,
                 company: state.user.company_name,
                 account_id: state.sfdc.account_id
@@ -265,7 +272,7 @@ export default function (/* { ssrContext } */) {
         }
 
         try {
-            payload = {
+            const payload = {
                 tenant_id: state.tenant.tenant_id,
                 company: state.user.company_name,
                 firstname: state.user.firstname,
@@ -290,7 +297,7 @@ export default function (/* { ssrContext } */) {
         }
 
         try {
-            payload = {
+            const payload = {
                 email: state.user.email
             }
                 
@@ -312,7 +319,7 @@ export default function (/* { ssrContext } */) {
         }
 
         try {
-            payload = {
+            const payload = {
                 tenant_id: state.tenant.tenant_id,
                 email: state.user.email
             }
@@ -335,7 +342,7 @@ export default function (/* { ssrContext } */) {
         }
 
         try {
-            payload = {                
+            const payload = {                
                 email: state.user.email
             }
                 

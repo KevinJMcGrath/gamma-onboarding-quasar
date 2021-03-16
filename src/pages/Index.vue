@@ -47,97 +47,127 @@
 
     <!-- Accordian  style="border:1px solid black;"-->
     <div class="row q-mt-sm">
-    <div class="col-8">
-      <q-list bordered class="rounded-borders">
-        <q-expansion-item group="onboarding" label="Tenant Details" icon="cloud" v-model="expand_tenants">
-          <q-card dark bordered class="bg-grey-9">
-            <q-card-section>
-              <div class="row text-right q-gutter-sm">
-                <div class="col-2"><b>Company Name:</b></div>
-                <div class="col-3 text-left">{{ $store.state.user.company_name }}</div>
-                <div class="col-2"><b>Tenant Id:</b></div>
-                <div class="col-3 text-left">{{ $store.state.tenant.tenant_id }}</div>
-              </div>
+      <div class="col-8">
+        <q-list bordered class="rounded-borders">
+          <q-expansion-item group="onboarding" label="Tenant Details" icon="cloud" v-model="expand_tenants">
+            <q-card dark bordered class="bg-grey-9">
+              <q-card-section>
+                <div class="row text-right q-gutter-sm">
+                  <div class="col-2"><b>Company Name:</b></div>
+                  <div class="col-3 text-left">{{ $store.state.user.company_name }}</div>
+                  <div class="col-2"><b>Tenant Id:</b></div>
+                  <div class="col-3 text-left">{{ $store.state.tenant.tenant_id }}</div>
+                </div>
 
-              <div class="row text-right q-gutter-sm">
-                <div class="col-2"><b>Admin Name:</b></div>
-                <div class="col-3 text-left">{{ $store.state.user.firstname }} {{ $store.state.user.lastname}}</div>
-                <div class="col-2"><b>Admin Email:</b></div>
-                <div class="col-3 text-left">{{ $store.state.user.email }}</div>
-              </div>
-              
-              <div class="row text-right q-gutter-sm">
-                <div class="col-2"><b>Password:</b></div>
-                <div class="col-auto">{{ $store.state.user.initial_password }}</div>
-              </div>
-                
-              <div class="row text-right q-gutter-sm">
-                <div class="col-2"><b>AC Portal:</b></div>
-                <div class="col-auto">
-                  <a v-bind:href="$store.state.tenant.tenant_admin_url" 
-                    style="color: white"
-                    target=_blank>{{ $store.state.tenant.tenant_admin_url }}
-                  </a>
+                <div class="row text-right q-gutter-sm">
+                  <div class="col-2"><b>Admin Name:</b></div>
+                  <div class="col-3 text-left">{{ $store.state.user.firstname }} {{ $store.state.user.lastname}}</div>
+                  <div class="col-2"><b>Admin Email:</b></div>
+                  <div class="col-3 text-left">
+                    {{ $store.state.user.email }}
+                    <q-btn flat padding="none" icon="content_copy" color="primary" @click="copy_value($store.state.user.email)"/>
                   </div>
-              </div>
-            </q-card-section>
-          </q-card>
-        </q-expansion-item>
+                </div>
+                
+                <div class="row text-right q-gutter-sm">
+                  <div class="col-2"><b>Password:</b></div>
+                  <div class="col-auto">
+                    {{ $store.state.user.initial_password }}
+                    <q-btn flat padding="none" icon="content_copy" color="primary" @click="copy_value($store.state.user.initial_password)"/>
+                  </div>
+                </div>
+                  
+                <div class="row text-right q-gutter-sm">
+                  <div class="col-2"><b>AC Portal:</b></div>
+                  <div class="col-auto">
+                    <a v-bind:href="$store.state.tenant.tenant_admin_url" 
+                      style="color: white"
+                      target=_blank>{{ $store.state.tenant.tenant_admin_url }}
+                    </a>
+                    </div>
+                </div>
+              </q-card-section>
+            </q-card>
+          </q-expansion-item>
 
-        <q-separator />
+          <q-separator />
 
-        <q-expansion-item group="onboarding" label="RSA Public Key" icon="shield" v-model="expand_rsa">
-          <q-card dark bordered class="bg-grey-9 rsa_card">
-            <q-card-section>
-              <!-- vue.js template syntax renders as plaintext. This is how you get html. BE CAREFUL -->
-              <span v-html="$store.state.tenant.rsa_key"></span>
-            </q-card-section>
-          </q-card>
-        </q-expansion-item>
+          <q-expansion-item group="onboarding" label="RSA Public Key" icon="shield" v-model="expand_rsa">
+            <q-card dark bordered class="bg-grey-9 rsa_card">
+              <q-card-section>
+                Copy RSA Public Key ->
+                <q-btn flat padding="none" icon="content_copy" color="primary" @click="copy_value($store.state.tenant.rsa_key)"/>
+              </q-card-section>
+              <q-card-section>
+                <!-- vue.js template syntax renders as plaintext. This is how you get html. BE CAREFUL -->
+                <span v-html="$store.state.tenant.rsa_key_html"></span>
+              </q-card-section>
+            </q-card>
+          </q-expansion-item>
 
-        <q-separator />
+          <q-separator />
 
-        <q-expansion-item group="onboarding" label="Intermission" icon="sticky_note_2" v-model="expand_finalize">
-          <q-card dark bordered class="bg-grey-9">
-            <q-card-section>
-              Ensure you have completed the following steps before continuing:
-              <q-list>
+          <q-expansion-item group="onboarding" label="Intermission" icon="sticky_note_2" v-model="expand_finalize">
+            <q-card dark bordered class="bg-grey-9">
+              <q-card-section>
+                Ensure you have completed the following steps before continuing:
+                <q-list>
 
-                <q-item>
-                  <q-item-section avatar>
-                    <q-icon color="teal" name="check" />
-                  </q-item-section>
-                  <q-item-section>Set all entitlements to "Yes" for intial user</q-item-section>
-                </q-item>
+                  <q-item>
+                    <q-item-section avatar>
+                      <q-icon color="teal" name="check" />
+                    </q-item-section>
+                    <q-item-section>Set all entitlements to "Yes" for intial user</q-item-section>
+                  </q-item>
 
-                <q-item>
-                  <q-item-section avatar>
-                    <q-icon color="teal" name="check" />
-                  </q-item-section>
-                  <q-item-section>
-                    <q-item-label>Create mtadminbot service account</q-item-label>
-                    <q-item-label caption lines=4 class="white_label">
-                      Username: mtadminbot <br/>
-                      Display name: Edwin<br/>
-                      Email Address: mtadminbot@{{$store.state.user.domain}}<br/>
-                      User Provisioning Flag: True
-                    </q-item-label>
-                  </q-item-section>
-                </q-item>
+                  <q-item>
+                    <q-item-section avatar>
+                      <q-icon color="teal" name="check" />
+                    </q-item-section>
+                    <q-item-section>
+                      <q-item-label>Create mtadminbot service account</q-item-label>
+                      <q-item-label caption lines=4 class="white_label">
+                        Username: mtadminbot <br/>
+                        Display name: Edwin<br/>
+                        Email Address: {{$store.state.tenant.bot_email}} 
+                        <q-btn flat padding="none" icon="content_copy" color="primary" @click="copy_value($store.state.tenant.bot_email)"/>
+                        <br/>
+                        User Provisioning Flag: True
+                      </q-item-label>
+                    </q-item-section>
+                  </q-item>
 
-                <q-item>
-                  <q-item-section avatar>
-                    <q-icon color="teal" name="check" />
-                  </q-item-section>
-                  <q-item-section>Copy RSA public key to RSA box</q-item-section>
-                </q-item>
+                  <q-item>
+                    <q-item-section avatar>
+                      <q-icon color="teal" name="check" />
+                    </q-item-section>
+                    <q-item-section>Copy RSA public key to RSA box</q-item-section>
+                  </q-item>
 
-              </q-list>
-            </q-card-section>
-          </q-card>
-        </q-expansion-item>
-      </q-list>
-    </div>
+                </q-list>
+              </q-card-section>
+            </q-card>
+          </q-expansion-item>
+        </q-list>
+      </div>
+      <div class="col-auto">
+        <q-btn push color="primary" label="Test Connection" @click="verify_backend" /><br/>
+        <q-btn push color="primary" label="Load SSE" @click="load_sse_data" /><br/>
+        <q-btn push color="primary" label="Deploy Edwin" @click="deploy_edwin" /><br/>
+        <q-btn push color="primary" label="Create JIRA Records" @click="create_jira_records" /><br/>
+        <q-btn push color="primary" label="Create Zendesk Records" @click="create_zendesk_records" /><br/>
+        <q-btn push color="primary" label="Update Salesforce" @click="update_salesforce" /><br/>
+        <q-btn push color="primary" label="Submit Subscription" @click="bill_client" /><br/>
+        <q-btn push color="primary" label="Notify Client" @click="notify_client" />
+        <div class="row">
+          <div class="col-auto">
+            <q-btn push color="primary" label="Clear Log" @click="clear_log" />
+          </div>
+          <div class="col-auto">
+            <q-btn push color="primary" label="Add log item" @click="test_log_item" />
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="row q-mt-sm">
@@ -150,7 +180,7 @@
             <q-separator dark inset />
 
             <q-card-section>
-              <q-scroll-area class="c64_terminal">              
+              <q-scroll-area class="c64_terminal" ref="debug_log" @scroll="activate_scroll">              
                 <ul>
                   <li v-for="log_item in $store.state.log">
                     <span v-bind:class="log_item.classname">{{log_item.text}}</span>
@@ -348,6 +378,13 @@ export default {
         this.appendLogItem('Done!')
       }
     },
+    copy_value(evt) {
+      try {
+        navigator.clipboard.writeText(evt)
+      } catch(error) {
+        console.log(`Error copying data to clipboard: ${error}`)
+      }
+    },
     addLogItem(msg) {
       this.$store.dispatch('addLogItem', {message: msg, isError: false})
     },
@@ -356,6 +393,19 @@ export default {
     },
     addErrorItem(msg) {
       this.$store.dispatch('addLogItem', {message: msg, isError: true})
+    },
+    clear_log() {
+      this.$store.commit('CLEAR_LOG')
+    },
+    test_log_item() {
+      this.addLogItem('Adding a test log item...')
+    },
+    activate_scroll(info) {
+      //console.log(info)
+
+      if (info.verticalSize > info.verticalContainerSize) {
+        this.$refs.debug_log.setScrollPosition(this.$refs.debug_log.$el.scrollHeight, 1)
+      }
     }
   }
 }
