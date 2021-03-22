@@ -346,7 +346,7 @@ export default function (/* { ssrContext } */) {
                 email: state.user.email
             }
                 
-            let resp = await axios.post(`${getters.apiBaseUrl}/api/notification/internal`, payload)
+            let resp = await axios.post(`${getters.apiBaseUrl}/api/notification/client`, payload)
         }
         catch (error) {
             console.error(error)
