@@ -1,5 +1,8 @@
 <template>  
   <q-form class="q-gutter-md">
+    <q-banner v-bind:class="[banner_bgcolor, banner_textcolor, banner_show]">
+      You are currently viewing this app in {{appModeText}} mode.
+    </q-banner>
 
   <div class="q-pa-md"> 
 
@@ -218,6 +221,31 @@ export default {
   },
   async mounted() {    
     await this.verify_backend()
+  },
+  computed: {
+    banner_show() {
+      if (this.$store.getters.appMode == 'UAT' || this.$store.getters.appMode == 'DEV') {
+        return ''
+      }
+      else {
+        return 'hidden'
+      }
+
+    },
+    banner_bgcolor() {
+      if (this.$store.getters.appMode == 'DEV') {
+        return 'bg-orange'
+      }
+      else {
+        return 'bg-red'
+      }
+    },
+    banner_textcolor() {
+      return 'text-white'
+    },
+    appModeText() {
+      return this.$store.getters.appMode
+    }
   },
   methods: {
     async load_tenant_data() {

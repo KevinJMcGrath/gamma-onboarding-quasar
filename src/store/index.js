@@ -109,6 +109,12 @@ export default function (/* { ssrContext } */) {
     getters: {
         apiBaseUrl: (state) => {
             return `${process.env.API_BASE_URL}:${process.env.API_PORT}`
+            //return 'http://usny-miguel-ubuntu:9100'
+        },
+        appMode: (state) => {
+            //console.log(process.env.APP_MODE)
+            return process.env.APP_MODE
+            //return 'UAT'
         }
   },
   actions: {
